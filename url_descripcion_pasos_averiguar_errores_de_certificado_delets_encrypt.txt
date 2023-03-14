@@ -1,0 +1,20 @@
+https://carpie.net/articles/installing-and-using-cert-manager-with-k3s
+
+
+Troubleshooting certificate request issues
+That's the happy path. If READY is False, we could give it some time and check the status again in case it takes a bit. If it stays False then we have an issue we need to troubleshoot. At this point we can walk the chain of Kubernetes resources until we find a status message that tells us the problem.
+
+Let's say that we did the request above and READY was False. We start the troubleshooting with
+
+kubectl describe certificates k3s-carpie-net
+This will return a lot of information. Usually the helpful things are in the Events: section which is typically at the bottom. Let's say the last event was Created new CertificateRequest resource "k3s-carpie-net-1256631848. We would then describe that request
+
+kubectl describe certificaterequest k3s-carpie-net-1256631848
+Now let's say the last event there was Waiting on certificate issuance from order default/k3s-carpie-net-1256631848-2342473830. Ok, we can describe the order.
+
+kubectl describe orders default/k3s-carpie-net-1256631848-2342473830
+Let's say that has an event that says Created Challenge resource "k3s-carpie-net-1256631848-2342473830-1892150396" for domain "k3s.carpie.net". Let's describe the challenge
+
+kubectl describe challenges k3s-carpie-net-1256631848-2342473830-1892150396
+The last event returned from here is Presented challenge using http-01 challenge mechanism That looks ok, so we scan up the describe output and see a message Waiting for http-01 challenge propagation: failed to perform self check GET request ... no such host. Finally! We have found the problem! In this case, no such host means that the DNS lookup failed, so then we would go back and manually check our DNS settings and that our domain's DNS resolves correctly for us and make any changes needed.
+
