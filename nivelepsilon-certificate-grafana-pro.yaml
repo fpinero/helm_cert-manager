@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: grafana-nivelepsilon-com
+  namespace: kubernetes-monitoring
+spec:
+  secretName: grafana-nivelepsilon-com
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - grafana.nivelepsilon.com
+
